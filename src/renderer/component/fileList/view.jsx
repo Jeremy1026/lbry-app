@@ -4,6 +4,28 @@ import { FormField } from 'component/common/form';
 import FileCard from 'component/fileCard';
 import { BusyMessage } from 'component/common.js';
 
+const sortFunctions = {
+  date: (fileInfos) => {
+    return fileInfos.slice().reverse();
+  },
+  title: (fileInfos) => {
+    return fileInfos.slice().sort((fileInfo1, fileInfo2) => {
+      const title1 = fileInfo1.value
+        ? fileInfo1.value.stream.metadata.title.toLowerCase()
+        : fileInfo1.name;
+      const title2 = fileInfo2.value
+        ? fileInfo2.value.stream.metadata.title.toLowerCase()
+        : fileInfo2.name;
+      if (title1 < title2) {
+        return -1;
+      } else if (title1 > title2) {
+        return 1;
+      }
+      return 0;
+    });
+  },
+};
+
 class FileList extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -12,39 +34,7 @@ class FileList extends React.PureComponent {
       sortBy: 'date',
     };
 
-    this._sortFunctions = {
-      date(fileInfos) {
-        return fileInfos.slice().reverse();
-      },
-      title(fileInfos) {
-        return fileInfos.slice().sort((fileInfo1, fileInfo2) => {
-          const title1 = fileInfo1.value
-            ? fileInfo1.value.stream.metadata.title.toLowerCase()
-            : fileInfo1.name;
-          const title2 = fileInfo2.value
-            ? fileInfo2.value.stream.metadata.title.toLowerCase()
-            : fileInfo2.name;
-          if (title1 < title2) {
-            return -1;
-          } else if (title1 > title2) {
-            return 1;
-          }
-          return 0;
-        });
-      },
-      filename(fileInfos) {
-        return fileInfos.slice().sort(({ file_name: fileName1 }, { file_name: fileName2 }) => {
-          const fileName1Lower = fileName1.toLowerCase();
-          const fileName2Lower = fileName2.toLowerCase();
-          if (fileName1Lower < fileName2Lower) {
-            return -1;
-          } else if (fileName2Lower > fileName1Lower) {
-            return 1;
-          }
-          return 0;
-        });
-      },
-    };
+    this.handleSortChanged = this.handleSortChanged.bind(this);
   }
 
   getChannelSignature(fileInfo) {
@@ -61,11 +51,11 @@ class FileList extends React.PureComponent {
   }
 
   render() {
-    const { handleSortChanged, fetching, fileInfos } = this.props;
+    const { fetching, fileInfos } = this.props;
     const { sortBy } = this.state;
     const content = [];
 
-    this._sortFunctions[sortBy](fileInfos).forEach(fileInfo => {
+    sortFunctions[sortBy](fileInfos).forEach(fileInfo => {
       const uriParams = {};
 
       if (fileInfo.channel_name) {
@@ -91,7 +81,7 @@ class FileList extends React.PureComponent {
       <section>
           <React.Fragment>
             <div className="file-list__sort">
-              <FormField prefix={__('Sort by')} type="select" onChange={this.handleSortChanged.bind(this)}>
+              <FormField prefix={__('Sort by')} type="select" value={sortBy} onChange={this.handleSortChanged}>
                 <option value="date">{__('Date')}</option>
                 <option value="title">{__('Title')}</option>
               </FormField>

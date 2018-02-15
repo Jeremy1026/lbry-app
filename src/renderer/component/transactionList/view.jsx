@@ -1,19 +1,20 @@
-// I'll come back to this
-/* eslint-disable */
 import React from 'react';
-import TransactionListItem from './internal/TransactionListItem';
-import { FormRow } from 'component/common/form';
+import { FormField } from 'component/common/form';
 import Link from 'component/link';
 import * as icons from 'constants/icons';
 import * as modals from 'constants/modal_types';
+import TransactionListItem from './internal/transaction-list-item';
 
 class TransactionList extends React.PureComponent {
   constructor(props) {
     super(props);
 
     this.state = {
-      filter: null,
+      filter: "all",
     };
+
+    this.handleFilterChanged = this.handleFilterChanged.bind(this);
+    this.filterTransaction = this.filterTransaction.bind(this);
   }
 
   handleFilterChanged(event) {
@@ -25,7 +26,7 @@ class TransactionList extends React.PureComponent {
   filterTransaction(transaction) {
     const { filter } = this.state;
 
-    return !filter || filter == transaction.type;
+    return filter == "all" || filter === transaction.type;
   }
 
   isRevokeable(txid, nout) {
@@ -39,44 +40,47 @@ class TransactionList extends React.PureComponent {
   }
 
   render() {
-    const { emptyMessage, rewards, transactions } = this.props;
+    const { emptyMessage, rewards, transactions, noFilter } = this.props;
+    const { filter } = this.state;
 
-    const transactionList = transactions.filter(this.filterTransaction.bind(this));
+    const transactionList = transactions.filter(this.filterTransaction);
 
     return (
-      <div>
-        {(transactionList.length || this.state.filter) && (
-          <FormRow
-            prefix={__('Filter')}
-            postfix={
-              <Link fakeLink href="https://lbry.io/faq/transaction-types" label={__('Help')} />
-            }
-            render={() => (
-              <select>
-                <option value="">{__('All')}</option>
-                <option value="spend">{__('Spends')}</option>
-                <option value="receive">{__('Receives')}</option>
-                <option value="publish">{__('Publishes')}</option>
-                <option value="channel">{__('Channels')}</option>
-                <option value="tip">{__('Tips')}</option>
-                <option value="support">{__('Supports')}</option>
-                <option value="update">{__('Updates')}</option>
-              </select>
-            )}
-          />
+      <React.Fragment>
+        {!noFilter && transactionList.length && (
+          <div className="card__actions-top-corner">
+            <FormField
+              type="select"
+              value={filter}
+              onChange={this.handleFilterChanged}
+              prefix={__('Show')}
+              postfix={
+                <Link fakeLink href="https://lbry.io/faq/transaction-types" label={__('Help')} />
+              }
+              >
+              <option value="all">{__('All')}</option>
+              <option value="spend">{__('Spends')}</option>
+              <option value="receive">{__('Receives')}</option>
+              <option value="publish">{__('Publishes')}</option>
+              <option value="channel">{__('Channels')}</option>
+              <option value="tip">{__('Tips')}</option>
+              <option value="support">{__('Supports')}</option>
+              <option value="update">{__('Updates')}</option>
+            </FormField>
+          </div>
         )}
         {!transactionList.length && (
           <div className="empty">{emptyMessage || __('No transactions to list.')}</div>
         )}
-        {Boolean(transactionList.length) && (
-          <table className="table-standard table-transactions table-stretch">
+        {!!transactionList.length && (
+          <table className="table table--transactions table--stretch">
             <thead>
               <tr>
-                <th>{__('Date')}</th>
-                <th>{__('Amount (Fee)')}</th>
+                <th>{__('Amount')}</th>
                 <th>{__('Type')} </th>
                 <th>{__('Details')} </th>
                 <th>{__('Transaction')}</th>
+                <th>{__('Date')}</th>
               </tr>
             </thead>
             <tbody>
@@ -92,10 +96,9 @@ class TransactionList extends React.PureComponent {
             </tbody>
           </table>
         )}
-      </div>
+      </React.Fragment>
     );
   }
 }
 
 export default TransactionList;
-/* eslint-enable */

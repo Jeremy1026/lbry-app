@@ -3,7 +3,6 @@
   margin-right: auto;
   border-radius: var(--card-radius);
   overflow: auto;
-  user-select: text;
   display: flex;
   position: relative;
   flex-direction: column;
@@ -165,6 +164,12 @@
   .btn {
     margin: 0 $spacing-vertical / 3;
   }
+}
+
+.card__actions-top-corner {
+  position: absolute;
+  top: $spacing-vertical;
+  right: $spacing-vertical;
 }
 
 /*

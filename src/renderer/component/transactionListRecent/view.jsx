@@ -13,7 +13,7 @@ type Props = {
 };
 
 class TransactionListRecent extends React.PureComponent<Props> {
-  componentWillMount() {
+  componentDidMount() {
     this.props.fetchTransactions();
   }
 
@@ -27,6 +27,7 @@ class TransactionListRecent extends React.PureComponent<Props> {
           {fetchingTransactions && <BusyMessage message={__('Loading transactions')} />}
           {!fetchingTransactions && (
             <TransactionList
+              noFilter
               transactions={transactions}
               emptyMessage={__("Looks like you don't have any recent transactions.")}
             />
